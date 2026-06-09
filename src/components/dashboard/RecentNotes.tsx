@@ -1,5 +1,5 @@
 import { FileText, Clock, ArrowRight } from 'lucide-react';
-import { notes } from '../../data/mock';
+import { useStore } from '../../store/store';
 import { useI18n } from '../../i18n';
 
 interface Props {
@@ -8,7 +8,8 @@ interface Props {
 
 export default function RecentNotes({ onSelect }: Props) {
   const { t } = useI18n();
-  const recent = [...notes].sort((a, b) => b.updated.localeCompare(a.updated)).slice(0, 5);
+  const { docs } = useStore();
+  const recent = [...docs].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
 
   return (
     <div className="glass-card p-5">
@@ -34,7 +35,7 @@ export default function RecentNotes({ onSelect }: Props) {
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-text-muted">{note.folder}</span>
                 <span className="text-text-muted">&middot;</span>
-                <span className="text-xs text-text-muted">{note.updated}</span>
+                <span className="text-xs text-text-muted">{new Date(note.updatedAt).toLocaleDateString()}</span>
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Briefcase, FlaskConical, CalendarDays, Scale, RotateCcw, ArrowRight, Sparkles, Users, Layers, Gavel, Stethoscope, GraduationCap, MessageSquare, Building2, PenTool } from 'lucide-react';
-import { templates } from '../data/mock';
+import { useStore } from '../store/store';
+import { generateTemplateDocs } from '../store/seed';
 import { useI18n } from '../i18n';
 
 interface ExtendedTpl {
@@ -8,9 +9,28 @@ interface ExtendedTpl {
   industry: string; modules: number; users: number; tags: string[];
 }
 
-export default function Templates() {
+interface Props {
+  onNavigate: (page: string) => void;
+  onSelectNote: (id: string) => void;
+}
+
+export default function Templates({ onNavigate, onSelectNote }: Props) {
   const { t } = useI18n();
+  const { createDoc } = useStore();
   const [filter, setFilter] = useState('all');
+
+  const handleCreateFromTemplate = (templateId: string) => {
+    const newDocs = generateTemplateDocs(templateId);
+    if (newDocs.length === 0) {
+      // Single template - create directly
+      const doc = createDoc({ title: t(`tpl${templateId.charAt(0).toUpperCase() + templateId.slice(1)}`) || 'New Document', folder: 'Projects', content: `# New Document\n\n` });
+      onSelectNote(doc.id);
+      return;
+    }
+    // Create all template docs
+    newDocs.forEach(d => createDoc(d));
+    onNavigate('dashboard');
+  };
 
   const allTemplates: ExtendedTpl[] = [
     ...templates.map(tpl => ({
@@ -127,12 +147,10 @@ export default function Templates() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 border border-accent-blue/20 text-xs text-accent-blue hover:from-accent-blue/20 hover:to-accent-purple/20 transition-all">
+              <button onClick={() => handleCreateFromTemplate(tpl.id)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 border border-accent-blue/20 text-xs text-accent-blue hover:from-accent-blue/20 hover:to-accent-purple/20 transition-all">
                 {t('useTemplate')}
                 <ArrowRight className="w-3 h-3" />
-              </button>
-              <button className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.04] border border-border text-xs text-text-secondary hover:text-accent-purple hover:border-accent-purple/30 transition-all">
-                <Sparkles className="w-3 h-3" />
               </button>
             </div>
           </div>

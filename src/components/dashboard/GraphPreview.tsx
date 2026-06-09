@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Network } from 'lucide-react';
-import { graphNodes, graphEdges } from '../../data/mock';
+import { useStore } from '../../store/store';
+import { generateGraph } from '../../store/types';
 import { useI18n } from '../../i18n';
 
 interface Props {
@@ -8,6 +10,9 @@ interface Props {
 
 export default function GraphPreview({ onNavigate }: Props) {
   const { t } = useI18n();
+  const { docs } = useStore();
+  const { nodes, edges } = useMemo(() => generateGraph(docs), [docs]);
+
   return (
     <div className="glass-card p-5">
       <div className="flex items-center justify-between mb-4">
@@ -19,18 +24,18 @@ export default function GraphPreview({ onNavigate }: Props) {
       </div>
       <div className="relative h-48 rounded-xl bg-black/20 overflow-hidden">
         <svg width="100%" height="100%" viewBox="0 0 600 400">
-          {graphEdges.map((edge, i) => {
-            const src = graphNodes.find(n => n.id === edge.source);
-            const tgt = graphNodes.find(n => n.id === edge.target);
+          {edges.map((edge, i) => {
+            const src = nodes.find(n => n.id === edge.source);
+            const tgt = nodes.find(n => n.id === edge.target);
             if (!src || !tgt) return null;
-            return <line key={i} x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y} className="graph-edge" />;
+            return <line key={i} x1={src.x * 0.6} y1={src.y * 0.6} x2={tgt.x * 0.6} y2={tgt.y * 0.6} className="graph-edge" />;
           })}
-          {graphNodes.map(node => (
+          {nodes.map(node => (
             <g key={node.id} className="graph-node">
-              <circle cx={node.x} cy={node.y} r={node.size} fill={node.color} opacity={0.8} />
-              <circle cx={node.x} cy={node.y} r={node.size * 1.5} fill={node.color} opacity={0.08} />
-              <text x={node.x} y={node.y + node.size + 14} textAnchor="middle" fill="#9CA3AF" fontSize="10" fontFamily="Inter, sans-serif">
-                {node.label}
+              <circle cx={node.x * 0.6} cy={node.y * 0.6} r={node.size * 0.7} fill={node.color} opacity={0.8} />
+              <circle cx={node.x * 0.6} cy={node.y * 0.6} r={node.size * 1.2} fill={node.color} opacity={0.08} />
+              <text x={node.x * 0.6} y={node.y * 0.6 + node.size * 0.7 + 12} textAnchor="middle" fill="#9CA3AF" fontSize="9" fontFamily="Inter, sans-serif">
+                {node.label.length > 12 ? node.label.substring(0, 12) + '...' : node.label}
               </text>
             </g>
           ))}

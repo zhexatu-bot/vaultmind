@@ -1,13 +1,19 @@
 import { FileText, Link2, Tag, HardDrive } from 'lucide-react';
 import { useI18n } from '../../i18n';
+import { useStore } from '../../store/store';
+import { extractWikiLinks } from '../../store/types';
 
 export default function StatCards() {
   const { t } = useI18n();
+  const { docs, allTags } = useStore();
+  const totalBacklinks = docs.reduce((sum, d) => sum + extractWikiLinks(d.content).length, 0);
+  const storageKB = Math.round(JSON.stringify(docs).length / 1024);
+
   const stats = [
-    { label: t('totalNotes'), value: '46', icon: <FileText className="w-5 h-5" />, color: 'from-blue-500/20 to-cyan-500/20', iconColor: 'text-blue-400' },
-    { label: t('backlinks'), value: '128', icon: <Link2 className="w-5 h-5" />, color: 'from-purple-500/20 to-pink-500/20', iconColor: 'text-purple-400' },
-    { label: t('tags'), value: '23', icon: <Tag className="w-5 h-5" />, color: 'from-emerald-500/20 to-teal-500/20', iconColor: 'text-emerald-400' },
-    { label: t('storage'), value: '12MB', icon: <HardDrive className="w-5 h-5" />, color: 'from-amber-500/20 to-orange-500/20', iconColor: 'text-amber-400' },
+    { label: t('totalNotes'), value: String(docs.length), icon: <FileText className="w-5 h-5" />, color: 'from-blue-500/20 to-cyan-500/20', iconColor: 'text-blue-400' },
+    { label: t('backlinks'), value: String(totalBacklinks), icon: <Link2 className="w-5 h-5" />, color: 'from-purple-500/20 to-pink-500/20', iconColor: 'text-purple-400' },
+    { label: t('tags'), value: String(allTags.length), icon: <Tag className="w-5 h-5" />, color: 'from-emerald-500/20 to-teal-500/20', iconColor: 'text-emerald-400' },
+    { label: t('storage'), value: `${storageKB}KB`, icon: <HardDrive className="w-5 h-5" />, color: 'from-amber-500/20 to-orange-500/20', iconColor: 'text-amber-400' },
   ];
 
   return (

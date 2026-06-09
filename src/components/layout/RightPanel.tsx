@@ -1,22 +1,22 @@
 import { Link2, Tag, FileText, Sparkles, ArrowRight } from 'lucide-react';
-import { notes } from '../../data/mock';
+import { useStore } from '../../store/store';
+import { findBacklinks, extractWikiLinks } from '../../store/types';
 import { useI18n } from '../../i18n';
 
-interface Props {
-  selectedNoteId?: string;
-}
-
-export default function RightPanel({ selectedNoteId }: Props) {
+export default function RightPanel() {
   const { t } = useI18n();
-  const note = notes.find(n => n.id === selectedNoteId);
+  const { selectedId, getDoc, docs, setSelectedId } = useStore();
+  const doc = selectedId ? getDoc(selectedId) : undefined;
 
-  const backlinks = note
-    ? notes.filter(n => n.links.includes(note.title)).map(n => ({ id: n.id, title: n.title, excerpt: n.content.substring(0, 80) + '...' }))
+  const backlinks = doc ? findBacklinks(docs, doc.title) : [];
+  const outgoingLinks = doc
+    ? extractWikiLinks(doc.content)
+        .map(link => docs.find(d => d.title.toLowerCase() === link.toLowerCase()))
+        .filter((d): d is NonNullable<typeof d> => d !== undefined)
     : [];
-
-  const relatedNotes = note
-    ? notes.filter(n => n.id !== note.id && n.tags.some(t => note.tags.includes(t))).slice(0, 3)
-    : notes.slice(0, 3);
+  const relatedByTag = doc
+    ? docs.filter(d => d.id !== doc.id && d.tags.some(tag => doc.tags.includes(tag))).slice(0, 5)
+    : [];
 
   return (
     <aside className="w-[320px] h-full border-l border-border bg-bg-sidebar overflow-y-auto">
@@ -31,14 +31,14 @@ export default function RightPanel({ selectedNoteId }: Props) {
           {backlinks.length > 0 ? (
             <div className="flex flex-col gap-2">
               {backlinks.map(b => (
-                <div key={b.id} className="glass-card p-3 cursor-pointer hover:border-accent-blue/30">
+                <div key={b.id} onClick={() => setSelectedId(b.id)} className="glass-card p-3 cursor-pointer hover:border-accent-blue/30 transition-all">
                   <div className="text-sm font-medium text-text-primary mb-1">{b.title}</div>
-                  <div className="text-xs text-text-muted line-clamp-2">{b.excerpt}</div>
+                  <div className="text-xs text-text-muted line-clamp-2">{b.content.substring(0, 80)}...</div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-text-muted">{t('selectNoteBacklinks')}</p>
+            <p className="text-xs text-text-muted">{doc ? 'No backlinks yet' : t('selectNoteBacklinks')}</p>
           )}
         </section>
 
@@ -49,33 +49,35 @@ export default function RightPanel({ selectedNoteId }: Props) {
             <h3 className="text-sm font-semibold text-text-primary">{t('tags')}</h3>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {(note?.tags || ['product', 'ai', 'research']).map(tag => (
-              <span key={tag} className="px-2.5 py-1 text-xs rounded-lg bg-accent-purple/10 text-accent-purple border border-accent-purple/20">
-                #{tag}
-              </span>
+            {(doc?.tags || []).map(tag => (
+              <span key={tag} className="tag-badge">#{tag}</span>
             ))}
+            {!doc && <span className="text-xs text-text-muted">—</span>}
           </div>
         </section>
 
-        {/* Related Notes */}
+        {/* Related Notes (outgoing links + tag matches) */}
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-emerald-400" />
             <h3 className="text-sm font-semibold text-text-primary">{t('relatedNotes')}</h3>
           </div>
           <div className="flex flex-col gap-2">
-            {relatedNotes.map(n => (
-              <div key={n.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-all group">
+            {[...outgoingLinks, ...relatedByTag.filter(r => !outgoingLinks.some(o => o.id === r.id))].slice(0, 5).map(n => (
+              <div key={n.id} onClick={() => setSelectedId(n.id)} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-all group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-3.5 h-3.5 text-accent-blue" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-text-primary truncate">{n.title}</div>
-                  <div className="text-xs text-text-muted">{n.updated}</div>
+                  <div className="text-xs text-text-muted">{new Date(n.updatedAt).toLocaleDateString()}</div>
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
+            {outgoingLinks.length === 0 && relatedByTag.length === 0 && (
+              <p className="text-xs text-text-muted">—</p>
+            )}
           </div>
         </section>
 
@@ -87,8 +89,8 @@ export default function RightPanel({ selectedNoteId }: Props) {
           </div>
           <div className="glass-card p-4">
             <p className="text-xs text-text-secondary leading-relaxed">
-              {note
-                ? `This note covers "${note.title}" and is connected to ${note.links.length} other documents. Key themes include ${note.tags.join(', ')}. Last updated ${note.updated}.`
+              {doc
+                ? `"${doc.title}" references ${outgoingLinks.length} documents and has ${backlinks.length} backlinks. Topics: ${doc.tags.join(', ')}. Last updated ${new Date(doc.updatedAt).toLocaleDateString()}.`
                 : t('selectNoteSummary')}
             </p>
             <button className="mt-3 flex items-center gap-1.5 text-xs text-accent-blue hover:text-accent-blue/80 transition-colors">

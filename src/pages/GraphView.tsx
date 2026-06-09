@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { graphNodes, graphEdges, notes } from '../data/mock';
+import { useState, useMemo } from 'react';
 import { ZoomIn, ZoomOut, Maximize2, Link2, FileText, Tag } from 'lucide-react';
+import { useStore } from '../store/store';
+import { generateGraph, findBacklinks } from '../store/types';
 import { useI18n } from '../i18n';
 
-export default function GraphView() {
+interface Props {
+  onSelectNote: (id: string) => void;
+}
+
+export default function GraphView({ onSelectNote }: Props) {
   const { t } = useI18n();
+  const { docs } = useStore();
+  const { nodes: graphNodes, edges: graphEdges } = useMemo(() => generateGraph(docs), [docs]);
   const [zoom, setZoom] = useState(1);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -141,52 +148,56 @@ export default function GraphView() {
       {/* Right panel for selected node */}
       <div className="w-[300px] border-l border-border bg-bg-sidebar overflow-y-auto">
         <div className="p-5">
-          {selected ? (
-            <>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: selected.color + '20' }}>
-                  <FileText className="w-5 h-5" style={{ color: selected.color }} />
+          {selected ? (() => {
+            const doc = docs.find(d => d.id === selected.id);
+            const backlinks = doc ? findBacklinks(docs, doc.title) : [];
+            return (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: selected.color + '20' }}>
+                    <FileText className="w-5 h-5" style={{ color: selected.color }} />
+                  </div>
+                  <div>
+                    <button onClick={() => onSelectNote(selected.id)} className="text-sm font-semibold text-text-primary hover:text-accent-blue transition-colors text-left">
+                      {selected.label}
+                    </button>
+                    <div className="text-xs text-text-muted">{selected.group}</div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-text-primary">{selected.label}</h3>
-                  <span className="text-xs text-text-muted">{selected.group}</span>
-                </div>
-              </div>
 
-              {/* Backlinks */}
-              <section className="mb-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Link2 className="w-3.5 h-3.5 text-accent-blue" />
-                  <span className="text-xs font-semibold text-text-primary">{t('backlinks')}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {graphEdges.filter(e => e.source === selected.id || e.target === selected.id).map((e, i) => {
-                    const otherId = e.source === selected.id ? e.target : e.source;
-                    const other = graphNodes.find(n => n.id === otherId);
-                    return other ? (
-                      <div key={i} className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-all">
-                        <div className="w-2 h-2 rounded-full" style={{ background: other.color }}></div>
-                        <span className="text-xs text-text-secondary">{other.label}</span>
+                <section className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Link2 className="w-3.5 h-3.5 text-accent-blue" />
+                    <span className="text-xs font-semibold text-text-primary">{t('backlinks')} ({backlinks.length})</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {backlinks.map(b => (
+                      <div key={b.id} onClick={() => onSelectNote(b.id)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-all">
+                        <div className="w-2 h-2 rounded-full" style={{ background: selected.color }}></div>
+                        <span className="text-xs text-text-secondary">{b.title}</span>
                       </div>
-                    ) : null;
-                  })}
-                </div>
-              </section>
+                    ))}
+                    {backlinks.length === 0 && <p className="text-xs text-text-muted">No backlinks</p>}
+                  </div>
+                </section>
 
-              {/* Tags */}
-              <section className="mb-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="w-3.5 h-3.5 text-accent-purple" />
-                  <span className="text-xs font-semibold text-text-primary">{t('tags')}</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {(notes.find(n => n.title.includes(selected.label.split(' ')[0]))?.tags || ['project']).map(tag => (
-                    <span key={tag} className="tag-badge">#{tag}</span>
-                  ))}
-                </div>
-              </section>
-            </>
-          ) : (
+                <section className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Tag className="w-3.5 h-3.5 text-accent-purple" />
+                    <span className="text-xs font-semibold text-text-primary">{t('tags')}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(doc?.tags || []).map(tag => <span key={tag} className="tag-badge">#{tag}</span>)}
+                  </div>
+                </section>
+
+                <button onClick={() => onSelectNote(selected.id)}
+                  className="w-full py-2 rounded-lg bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 border border-accent-blue/20 text-xs text-accent-blue hover:from-accent-blue/20 hover:to-accent-purple/20 transition-all">
+                  Open in Editor
+                </button>
+              </>
+            );
+          })() : (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-blue/10 to-accent-purple/10 flex items-center justify-center mx-auto mb-3">
                 <FileText className="w-7 h-7 text-accent-blue/40" />
