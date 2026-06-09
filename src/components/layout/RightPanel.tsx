@@ -1,11 +1,13 @@
 import { Link2, Tag, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import { notes } from '../../data/mock';
+import { useI18n } from '../../i18n';
 
 interface Props {
   selectedNoteId?: string;
 }
 
 export default function RightPanel({ selectedNoteId }: Props) {
+  const { t } = useI18n();
   const note = notes.find(n => n.id === selectedNoteId);
 
   const backlinks = note
@@ -23,7 +25,7 @@ export default function RightPanel({ selectedNoteId }: Props) {
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Link2 className="w-4 h-4 text-accent-blue" />
-            <h3 className="text-sm font-semibold text-text-primary">Backlinks</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{t('backlinks')}</h3>
             <span className="text-xs text-text-muted ml-auto">{backlinks.length}</span>
           </div>
           {backlinks.length > 0 ? (
@@ -36,7 +38,7 @@ export default function RightPanel({ selectedNoteId }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-text-muted">Select a note to see backlinks</p>
+            <p className="text-xs text-text-muted">{t('selectNoteBacklinks')}</p>
           )}
         </section>
 
@@ -44,7 +46,7 @@ export default function RightPanel({ selectedNoteId }: Props) {
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Tag className="w-4 h-4 text-accent-purple" />
-            <h3 className="text-sm font-semibold text-text-primary">Tags</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{t('tags')}</h3>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {(note?.tags || ['product', 'ai', 'research']).map(tag => (
@@ -59,7 +61,7 @@ export default function RightPanel({ selectedNoteId }: Props) {
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-semibold text-text-primary">Related Notes</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{t('relatedNotes')}</h3>
           </div>
           <div className="flex flex-col gap-2">
             {relatedNotes.map(n => (
@@ -81,17 +83,17 @@ export default function RightPanel({ selectedNoteId }: Props) {
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-semibold text-text-primary">AI Summary</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{t('aiSummary')}</h3>
           </div>
           <div className="glass-card p-4">
             <p className="text-xs text-text-secondary leading-relaxed">
               {note
                 ? `This note covers "${note.title}" and is connected to ${note.links.length} other documents. Key themes include ${note.tags.join(', ')}. Last updated ${note.updated}.`
-                : 'Select a note to generate an AI summary of its content and connections.'}
+                : t('selectNoteSummary')}
             </p>
             <button className="mt-3 flex items-center gap-1.5 text-xs text-accent-blue hover:text-accent-blue/80 transition-colors">
               <Sparkles className="w-3 h-3" />
-              Expand with AI
+              {t('expandWithAi')}
             </button>
           </div>
         </section>

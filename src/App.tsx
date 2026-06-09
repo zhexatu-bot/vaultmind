@@ -7,41 +7,26 @@ import Editor from './pages/Editor';
 import GraphView from './pages/GraphView';
 import Search from './pages/Search';
 import Templates from './pages/Templates';
+import { I18nProvider } from './i18n';
 
-function App() {
+function AppContent() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page);
-  };
-
-  const handleSelectNote = (id: string) => {
-    setSelectedNoteId(id);
-    setCurrentPage('editor');
-  };
-
-  const handleSearch = (q: string) => {
-    setSearchQuery(q);
-    if (q.trim()) setCurrentPage('search');
-  };
+  const handleNavigate = (page: string) => setCurrentPage(page);
+  const handleSelectNote = (id: string) => { setSelectedNoteId(id); setCurrentPage('editor'); };
+  const handleSearch = (q: string) => { setSearchQuery(q); if (q.trim()) setCurrentPage('search'); };
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'dashboard':
-        return <Dashboard onNavigate={handleNavigate} onSelectNote={handleSelectNote} />;
+      case 'dashboard': return <Dashboard onNavigate={handleNavigate} onSelectNote={handleSelectNote} />;
       case 'editor':
-      case 'notes':
-        return <Editor noteId={selectedNoteId} />;
-      case 'graph':
-        return <GraphView />;
-      case 'search':
-        return <Search query={searchQuery} onSelectNote={handleSelectNote} />;
-      case 'templates':
-        return <Templates />;
-      default:
-        return <Dashboard onNavigate={handleNavigate} onSelectNote={handleSelectNote} />;
+      case 'notes': return <Editor noteId={selectedNoteId} />;
+      case 'graph': return <GraphView />;
+      case 'search': return <Search query={searchQuery} onSelectNote={handleSelectNote} />;
+      case 'templates': return <Templates />;
+      default: return <Dashboard onNavigate={handleNavigate} onSelectNote={handleSelectNote} />;
     }
   };
 
@@ -61,4 +46,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  );
+}

@@ -85,3 +85,144 @@ body {
 .markdown-preview table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
 .markdown-preview th, .markdown-preview td { border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; text-align: left; }
 .markdown-preview th { background: rgba(255,255,255,0.04); font-weight: 600; }
+
+/* Wikilink styling */
+.wikilink {
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(56, 189, 248, 0.4);
+  transition: all 0.15s;
+}
+.wikilink:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-bottom-color: #38BDF8;
+}
+
+/* Tag badge */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-size: 0.75em;
+  font-weight: 500;
+  background: rgba(139, 92, 246, 0.1);
+  color: #A78BFA;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  transition: all 0.15s;
+}
+.tag-badge:hover {
+  background: rgba(139, 92, 246, 0.18);
+}
+
+/* Glow border effect */
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(139,92,246,0.2));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+/* Subtle gradient bg */
+.bg-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(56,189,248,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.03) 0%, transparent 50%);
+}
+
+/* Animate in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fadeUp 0.4s ease forwards;
+}
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Nav active glow */
+.nav-active {
+  background: linear-gradient(90deg, rgba(56,189,248,0.1), rgba(139,92,246,0.08));
+  border-left: 2px solid #38BDF8;
+}
+
+/* Graph tooltip */
+.graph-tooltip {
+  position: absolute;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  pointer-events: none;
+  z-index: 50;
+  min-width: 180px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+/* Template card premium */
+.template-card {
+  background: linear-gradient(145deg, rgba(17,24,39,0.9), rgba(23,32,51,0.7));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.template-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #38BDF8, #8B5CF6);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.template-card:hover {
+  border-color: rgba(56,189,248,0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.template-card:hover::before {
+  opacity: 1;
+}
+
+/* Editor textarea */
+.editor-textarea {
+  background: transparent;
+  color: #D1D5DB;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  tab-size: 2;
+  caret-color: #38BDF8;
+}
+.editor-textarea::placeholder { color: #4B5563; }
+.editor-textarea:focus { outline: none; }
+
+/* Info bar in editor */
+.doc-info-bar {
+  background: rgba(17, 24, 39, 0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
